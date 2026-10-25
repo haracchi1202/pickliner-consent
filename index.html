@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ピックライナー イベント参加同意書</title>
+
+  <!-- ===== 設定値（ここだけ書き換えてください） ===== -->
+  <script>
+    // LIFF ID（LINE Developers の LIFF 画面で発行される値）
+    const LIFF_ID = "YOUR_LIFF_ID";
+    // GAS ウェブアプリの URL（デプロイ後に発行される .../exec で終わる URL）
+    const GAS_URL = "YOUR_GAS_WEBAPP_URL";
+    // 同意書バージョン（文面を更新したら数字を上げる）
+    const CONSENT_VERSION = "v1";
+  </script>
+  <!-- ============================================== -->
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+      background: #f4f6f8;
+      color: #222;
+      line-height: 1.7;
+    }
+    .wrap { max-width: 640px; margin: 0 auto; padding: 16px; }
+    h1 { font-size: 20px; margin: 8px 0 16px; }
+    .consent {
+      background: #fff;
+      border: 1px solid #d9dee3;
+      border-radius: 10px;
+      padding: 16px;
+      height: 320px;
+      overflow-y: auto;
+      font-size: 14px;
+      white-space: pre-wrap;
+      -webkit-overflow-scrolling: touch;
+    }
+    .field { margin-top: 16px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #c3cbd3;
+      border-radius: 8px;
+    }
+    .check {
+      margin-top: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 15px;
+    }
+    .check input { width: 22px; height: 22px; margin-top: 2px; flex: 0 0 auto; }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      background: #06c755;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:disabled { background: #b7c0c8; cursor: not-allowed; }
+    .msg { margin-top: 16px; padding: 12px; border-radius: 8px; font-size: 14px; display: none; }
+    .msg.ok { background: #e6f7ec; border: 1px solid #06c755; color: #0a7a3c; display: block; }
+    .msg.ng { background: #fdecec; border: 1px solid #e04545; color: #b02020; display: block; }
+    .hint { font-size: 12px; color: #6b7680; margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>イベント参加にあたっての同意書</h1>
+
+    <!-- ===== 同意書本文（ここを差し替えてください。この2つのコメントの間だけ編集すればOK） ===== -->
+    <div class="consent" id="consentBody">本会の活動に参加するにあたり、以下の内容をご確認のうえ、すべてに同意してください。
+
+【1. 活動中の怪我・事故に関する免責】
+・ピックルボールは運動を伴うため、捻挫・打撲・転倒・接触・熱中症などの怪我や事故が起こる可能性があります。
+・参加者は自身の健康状態を把握し、体調がすぐれないときは参加をお控えください。
+・活動中に生じた怪我・事故・体調不良について、主催者・運営者・他の参加者は、故意または重大な過失がある場合を除き、一切の責任を負いません。
+・万一に備え、各自で傷害保険等にご加入いただくことを推奨します。
+・持病・既往症・アレルギー等がある方は、必要に応じて事前に運営へお知らせください。
+
+【2. 個人情報の取り扱い】
+・取得した個人情報（氏名・連絡先・緊急連絡先など）は、会員管理・連絡・イベント運営・緊急時対応の目的にのみ利用します。
+・法令に基づく場合を除き、ご本人の同意なく第三者へ提供することはありません。
+・個人情報は適切に管理し、退会時には削除または匿名化します。
+・ご本人はいつでも、自己の情報の開示・訂正・削除を求めることができます。
+
+【3. 写真・動画撮影およびSNS掲載】
+・活動中に写真・動画を撮影し、会の記録・広報・SNS・ウェブサイト等に掲載する場合があります。
+・掲載は会の活動紹介の範囲で行い、個人を誹謗中傷する目的では使用しません。
+・撮影・掲載を希望されない方は、当日スタッフへお申し出ください。可能な範囲で配慮します（撮影を控える／掲載しないなど）。
+・すでに掲載されたものについても、削除のご希望があれば速やかに対応します。
+
+【4. 会則・マナーの遵守】
+・他の参加者・施設・近隣の方への配慮を持ち、安全で気持ちよく活動できるよう努めてください。
+・施設の利用ルール、コートの使用ルール、運営の指示に従ってください。
+・危険行為・迷惑行為・ハラスメント・用具の私的独占などは禁止します。
+・違反があった場合、運営は参加の制限や退会を求めることがあります。
+
+上記すべての内容を理解し、同意のうえでご登録ください。</div>
+    <!-- ===== 同意書本文ここまで ===== -->
+
+    <div class="field">
+      <label for="name">お名前（フルネーム）</label>
+      <input type="text" id="name" placeholder="例）山田 太郎" autocomplete="name" />
+    </div>
+
+    <label class="check">
+      <input type="checkbox" id="agree" />
+      <span>上記の同意書を最後まで読み、内容に同意します</span>
+    </label>
+
+    <button id="submitBtn" disabled>この内容で同意して送信する</button>
+    <p class="hint">送信すると、LINEのトークに控え（受付番号）が届きます。</p>
+
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <script>
+    const nameEl = document.getElementById("name");
+    const agreeEl = document.getElementById("agree");
+    const btn = document.getElementById("submitBtn");
+    const msg = document.getElementById("msg");
+
+    let profile = null;
+
+    // 氏名入力 + チェックの両方が揃うまで送信不可
+    function refreshButton() {
+      const ready = nameEl.value.trim().length > 0 && agreeEl.checked && profile !== null;
+      btn.disabled = !ready;
+    }
+    nameEl.addEventListener("input", refreshButton);
+    agreeEl.addEventListener("change", refreshButton);
+
+    function showMsg(type, text) {
+      msg.className = "msg " + type;
+      msg.textContent = text;
+    }
+
+    async function initLiff() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+        profile = await liff.getProfile();
+        refreshButton();
+      } catch (err) {
+        showMsg("ng", "LINEの初期化に失敗しました。LINEアプリから開き直してください。（" + err.message + "）");
+      }
+    }
+
+    async function submit() {
+      btn.disabled = true;
+      showMsg("", "");
+      msg.className = "msg";
+
+      const payload = {
+        userId: profile.userId,
+        displayName: profile.displayName,
+        name: nameEl.value.trim(),
+        version: CONSENT_VERSION,
+        ua: navigator.userAgent
+      };
+
+      try {
+        // GAS はプリフライトを受けられないため Content-Type を付けずに送る
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showMsg("ok", "同意を受け付けました。LINEのトークに控えを送りました。（受付番号：" + data.id + "）");
+        } else {
+          throw new Error(data.error || "不明なエラー");
+        }
+      } catch (err) {
+        showMsg("ng", "送信に失敗しました。通信環境をご確認のうえ、もう一度お試しください。（" + err.message + "）");
+        refreshButton();
+      }
+    }
+
+    btn.addEventListener("click", submit);
+    initLiff();
+  </script>
+</body>
+</html>
