@@ -12,7 +12,7 @@
     // GAS ウェブアプリの URL（デプロイ後に発行される .../exec で終わる URL）
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzU8BzHN_ol8D8ag31J4HoUUHp2ReTUihc2ywWh6H9pE1D3CJUCiih7VnpPGtDZw48Uyw/exec";
     // 同意書バージョン（文面を更新したら数字を上げる）
-    const CONSENT_VERSION = "v1";
+    const CONSENT_VERSION = "v2";
   </script>
   <!-- ============================================== -->
 
@@ -107,6 +107,14 @@
 ・危険行為・迷惑行為・ハラスメント・用具の私的独占などは禁止します。
 ・違反があった場合、運営は参加の制限や退会を求めることがあります。
 
+【5. 飲酒・年齢に関する確認（本イベント）】
+・本イベントではお酒を提供します。私は20歳以上であり、20歳未満ではないことを確認・申告します。
+・20歳未満の方へのお酒の提供・飲酒は固くお断りします。
+・飲酒後のプレーは重大な事故・怪我につながるため、飲酒してからのピックルボールのプレーは行いません。
+・飲酒の有無や量、自身の体調・プレーの可否は、すべて自己責任で判断します。
+・飲酒に起因する事故・怪我・体調不良・トラブルについて、主催者・運営者・他の参加者は、故意または重大な過失がある場合を除き、一切の責任を負いません。
+・車・自転車等でお越しの場合、飲酒運転は法律で禁止されています。絶対に行いません。
+
 上記すべての内容を理解し、同意のうえでご登録ください。</div>
     <!-- ===== 同意書本文ここまで ===== -->
 
@@ -116,8 +124,13 @@
     </div>
 
     <label class="check">
+      <input type="checkbox" id="age" />
+      <span>本イベントはお酒を提供します。私は<strong>20歳以上</strong>です（20歳未満ではありません）</span>
+    </label>
+
+    <label class="check">
       <input type="checkbox" id="agree" />
-      <span>上記の同意書を最後まで読み、内容に同意します</span>
+      <span>上記の同意書を最後まで読み、内容（飲酒後はプレーしない・自己責任を含む）に同意します</span>
     </label>
 
     <button id="submitBtn" disabled>この内容で同意して送信する</button>
@@ -128,18 +141,20 @@
 
   <script>
     const nameEl = document.getElementById("name");
+    const ageEl = document.getElementById("age");
     const agreeEl = document.getElementById("agree");
     const btn = document.getElementById("submitBtn");
     const msg = document.getElementById("msg");
 
     let profile = null;
 
-    // 氏名入力 + チェックの両方が揃うまで送信不可
+    // 氏名入力 + 20歳以上チェック + 同意チェックの3つが揃うまで送信不可
     function refreshButton() {
-      const ready = nameEl.value.trim().length > 0 && agreeEl.checked && profile !== null;
+      const ready = nameEl.value.trim().length > 0 && ageEl.checked && agreeEl.checked && profile !== null;
       btn.disabled = !ready;
     }
     nameEl.addEventListener("input", refreshButton);
+    ageEl.addEventListener("change", refreshButton);
     agreeEl.addEventListener("change", refreshButton);
 
     function showMsg(type, text) {
