@@ -4,6 +4,7 @@
  * 役割:
  *   - LIFF アプリから送られた同意データをスプレッドシート「同意記録」に追記
  *   - Messaging API の push で、本人のLINEトークに控えを送信
+ *   - 控え送信の成否と理由を「控え送信結果」列に記録（届かない原因の切り分け用）
  *
  * 設定:
  *   - スクリプトプロパティ CHANNEL_ACCESS_TOKEN に Messaging API のチャネルアクセストークンを登録
@@ -11,7 +12,7 @@
  */
 
 var SHEET_NAME = "同意記録";
-var HEADERS = ["受付日時", "受付番号", "氏名", "LINE表示名", "LINE userId", "同意書バージョン", "端末情報"];
+var HEADERS = ["受付日時", "受付番号", "氏名", "LINE表示名", "LINE userId", "同意書バージョン", "端末情報", "控え送信結果"];
 
 /**
  * 動作確認用。ブラウザで GAS URL を開くと表示される。
@@ -40,14 +41,14 @@ function doPost(e) {
     var version = data.version || "";
     var ua = data.ua || "";
 
-    // --- スプレッドシートへ記録 ---
+    // --- 本人へ控えを push（トークンがあれば）。結果文字列を受け取る ---
+    var pushResult = pushReceipt(userId, name, version, id, receivedAt);
+
+    // --- スプレッドシートへ記録（控え送信結果も残す）---
     var sheet = getSheet();
-    sheet.appendRow([receivedAt, id, name, displayName, userId, version, ua]);
+    sheet.appendRow([receivedAt, id, name, displayName, userId, version, ua, pushResult]);
 
-    // --- 本人へ控えを push（トークンがあれば） ---
-    pushReceipt(userId, name, version, id, receivedAt);
-
-    return jsonOutput({ ok: true, id: id });
+    return jsonOutput({ ok: true, id: id, push: pushResult });
   } catch (err) {
     return jsonOutput({ ok: false, error: String(err) });
   }
@@ -55,6 +56,7 @@ function doPost(e) {
 
 /**
  * シートを取得。無ければヘッダー付きで自動作成する。
+ * 既存シートのヘッダーが古い（列が足りない）場合は上書きして最新にする。
  */
 function getSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -62,6 +64,12 @@ function getSheet() {
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
     sheet.appendRow(HEADERS);
+    return sheet;
+  }
+  // 1行目のヘッダーが最新の列数に満たなければ、ヘッダーだけ貼り直す
+  var lastCol = sheet.getLastColumn();
+  if (lastCol < HEADERS.length) {
+    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
   }
   return sheet;
 }
@@ -76,12 +84,15 @@ function makeReceiptId() {
 
 /**
  * Messaging API の push で本人に控えを送る。
- * CHANNEL_ACCESS_TOKEN が未設定なら何もしない。
+ * 送信の成否と理由を表す文字列を返す（スプレッドシート記録用）。
  */
 function pushReceipt(userId, name, version, id, receivedAt) {
   var token = PropertiesService.getScriptProperties().getProperty("CHANNEL_ACCESS_TOKEN");
-  if (!token || !userId) {
-    return; // トークン未設定、または userId 不明なら push しない
+  if (!token) {
+    return "送信スキップ：トークン未設定（CHANNEL_ACCESS_TOKEN）";
+  }
+  if (!userId) {
+    return "送信スキップ：userIdなし";
   }
 
   var text =
@@ -97,13 +108,23 @@ function pushReceipt(userId, name, version, id, receivedAt) {
     messages: [{ type: "text", text: text }]
   };
 
-  UrlFetchApp.fetch("https://api.line.me/v2/bot/message/push", {
-    method: "post",
-    contentType: "application/json",
-    headers: { Authorization: "Bearer " + token },
-    payload: JSON.stringify(payload),
-    muteHttpExceptions: true
-  });
+  try {
+    var res = UrlFetchApp.fetch("https://api.line.me/v2/bot/message/push", {
+      method: "post",
+      contentType: "application/json",
+      headers: { Authorization: "Bearer " + token },
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    });
+    var code = res.getResponseCode();
+    if (code === 200) {
+      return "送信OK";
+    }
+    // 失敗時は LINE が返すエラー本文をそのまま残す（原因特定用）
+    return "送信失敗 HTTP" + code + "：" + res.getContentText();
+  } catch (err) {
+    return "送信例外：" + String(err);
+  }
 }
 
 /**
